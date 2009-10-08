@@ -28,6 +28,7 @@ class SilvaService(ZMIObject):
 
 class IntIdService(OFSIntIds, SilvaService):
 
+    grok.baseclass()
     grok.implements(interfaces.IInvisibleService)
 
 
