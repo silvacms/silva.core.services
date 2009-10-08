@@ -1,14 +1,13 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.1'
+version = '2.1dev'
 
 setup(name='silva.core.services',
       version=version,
       description="Silva Services",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
-      # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -24,9 +23,7 @@ setup(name='silva.core.services',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
+          'five.grok',
+          'silva.core.interfaces',
+          ],
       )
