@@ -4,6 +4,7 @@
 
 from OFS import SimpleItem
 from five import grok
+from five.intid.intid import OFSIntIds
 
 from silva.core import interfaces
 
@@ -23,4 +24,10 @@ class SilvaService(ZMIObject):
     def __init__(self, id, title):
         self.id = id
         self.title = title
+
+
+class IntIdService(OFSIntIds, SilvaService):
+
+    grok.implements(interfaces.IInvisibleService)
+
 

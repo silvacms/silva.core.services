@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.1dev'
+version = '2.2dev'
 
 setup(name='silva.core.services',
       version=version,
@@ -24,6 +24,7 @@ setup(name='silva.core.services',
       install_requires=[
           'setuptools',
           'five.grok',
+          'five.intid',
           'silva.core.interfaces',
           ],
       )
