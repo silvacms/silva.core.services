@@ -1,11 +1,15 @@
 <configure
    xmlns="http://namespaces.zope.org/zope"
+   xmlns:zcml="http://namespaces.zope.org/zcml"
    xmlns:grok="http://namespaces.zope.org/grok">
 
   <include package="five.grok" />
+  <include package="five.intid" />
+
+  <include file="filesystemsite.zcml"
+           zcml:condition="installed Products.FileSystemSite"
 
   <!-- Grok this package -->
   <grok:grok package="." />
-
 
 </configure>

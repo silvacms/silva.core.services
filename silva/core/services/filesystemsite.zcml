@@ -1,0 +1,49 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:grok="http://namespaces.zope.org/grok">
+
+  <!-- Prevent FileSystemSite to broke everything with IntIds -->
+  <subscriber
+     handler="five.intid.unreferenceable.addIntIdSubscriber"
+     for="Products.FileSystemSite.interfaces.IDirectoryView
+          zope.app.container.interfaces.IObjectAddedEvent"
+     />
+  <subscriber
+     handler="five.intid.unreferenceable.removeIntIdSubscriber"
+     for="Products.FileSystemSite.interfaces.IDirectoryView
+          zope.app.container.interfaces.IObjectRemovedEvent"
+     />
+  <subscriber
+     handler="five.intid.unreferenceable.moveIntIdSubscriber"
+     for="Products.FileSystemSite.interfaces.IDirectoryView
+          zope.app.container.interfaces.IObjectMovedEvent"
+     />
+  <adapter
+     factory="five.intid.unreferenceable.KeyReferenceNever"
+     for="Products.FileSystemSite.interfaces.IDirectoryView"
+     trusted="y"
+     />
+
+  <!-- FSObject -->
+  <subscriber
+     handler="five.intid.unreferenceable.addIntIdSubscriber"
+     for="Products.FileSystemSite.FSObject.FSObject
+          zope.app.container.interfaces.IObjectAddedEvent"
+     />
+  <subscriber
+     handler="five.intid.unreferenceable.removeIntIdSubscriber"
+     for="Products.FileSystemSite.FSObject.FSObject
+           zope.app.container.interfaces.IObjectRemovedEvent"
+     />
+  <subscriber
+     handler="five.intid.unreferenceable.moveIntIdSubscriber"
+     for="Products.FileSystemSite.FSObject.FSObject
+          zope.app.container.interfaces.IObjectMovedEvent"
+     />
+  <adapter
+     factory="five.intid.unreferenceable.KeyReferenceNever"
+     for="Products.FileSystemSite.FSObject.FSObject"
+     trusted="y"
+     />
+
+</configure>
