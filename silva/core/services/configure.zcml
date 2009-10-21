@@ -7,7 +7,7 @@
   <include package="five.intid" />
 
   <include file="filesystemsite.zcml"
-           zcml:condition="installed Products.FileSystemSite"
+           zcml:condition="installed Products.FileSystemSite" />
 
   <!-- Grok this package -->
   <grok:grok package="." />
