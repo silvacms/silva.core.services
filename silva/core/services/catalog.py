@@ -4,18 +4,16 @@
 
 from zope.interface import implements
 from zope.app.container.interfaces import IObjectAddedEvent
+from five import grok
 
 from OFS.interfaces import IObjectWillBeRemovedEvent
 from Products.ZCatalog.ZCatalog import ZCatalog
-
-from Products.ProxyIndex.ProxyIndex import RecordStyle
 from Products.Silva.helpers import add_and_edit, \
     register_service, unregister_service
 
 from silva.core.services.base import SilvaService
 from silva.core import conf as silvaconf
-
-from Products.SilvaMetadata.interfaces import ICatalogService
+from silva.core.services.interfaces import ICatalogService
 
 
 class CatalogService(ZCatalog, SilvaService):
@@ -39,20 +37,20 @@ def manage_addCatalogService(self, id, title=None, REQUEST=None):
     return ''
 
 
-@silvaconf.subscribe(
+@grok.subscribe(
     ICatalogService, IObjectWillBeRemovedEvent)
 def unregisterCatalogTool(service, event):
     unregister_service(service, ICatalogService)
 
 
-class El:
+class RecordStyle(object):
     """Helper class to initialize the catalog lexicon
     """
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
 
-@silvaconf.subscribe(
+@grok.subscribe(
     ICatalogService, IObjectAddedEvent)
 def configureCatalogService(catalog, event):
 
@@ -64,9 +62,9 @@ def configureCatalogService(catalog, event):
         catalog.manage_addProduct['ZCTextIndex'].manage_addLexicon(
             lexicon_id,
             elements=[
-                El(group='Case Normalizer', name='Case Normalizer'),
-                El(group='Stop Words', name=" Don't remove stop words"),
-                El(group='Word Splitter', name="Unicode Whitespace splitter"),
+                RecordStyle(group='Case Normalizer', name='Case Normalizer'),
+                RecordStyle(group='Stop Words', name=" Don't remove stop words"),
+                RecordStyle(group='Word Splitter', name="Unicode Whitespace splitter"),
                 ]
             )
 
@@ -101,10 +99,9 @@ def configureCatalogService(catalog, event):
         # ratios
         if field_type == 'ZCTextIndex':
             extra = RecordStyle(
-                {'doc_attr':field_name,
-                 'lexicon_id':'silva_lexicon',
-                 'index_type':'Okapi BM25 Rank'}
-                )
+                doc_attr=field_name,
+                lexicon_id='silva_lexicon',
+                index_type='Okapi BM25 Rank')
             catalog.addIndex(field_name, field_type, extra)
             continue
 
