@@ -2,7 +2,6 @@
 # See also LICENSE.txt
 # $Id$
 
-from zope.interface import implements
 from zope.app.container.interfaces import IObjectAddedEvent
 from five import grok
 
@@ -22,8 +21,7 @@ class CatalogService(ZCatalog, SilvaService):
 
     meta_type = "Silva Service Catalog"
 
-    implements(ICatalogService)
-
+    grok.implements(ICatalogService)
     silvaconf.factory('manage_addCatalogService')
 
 
@@ -37,8 +35,7 @@ def manage_addCatalogService(self, id, title=None, REQUEST=None):
     return ''
 
 
-@grok.subscribe(
-    ICatalogService, IObjectWillBeRemovedEvent)
+@grok.subscribe(ICatalogService, IObjectWillBeRemovedEvent)
 def unregisterCatalogTool(service, event):
     unregister_service(service, ICatalogService)
 
@@ -50,8 +47,7 @@ class RecordStyle(object):
         self.__dict__.update(kw)
 
 
-@grok.subscribe(
-    ICatalogService, IObjectAddedEvent)
+@grok.subscribe(ICatalogService, IObjectAddedEvent)
 def configureCatalogService(catalog, event):
 
     lexicon_id = 'silva_lexicon'
@@ -62,18 +58,18 @@ def configureCatalogService(catalog, event):
         catalog.manage_addProduct['ZCTextIndex'].manage_addLexicon(
             lexicon_id,
             elements=[
-                RecordStyle(group='Case Normalizer', name='Case Normalizer'),
-                RecordStyle(group='Stop Words', name=" Don't remove stop words"),
-                RecordStyle(group='Word Splitter', name="Unicode Whitespace splitter"),
+                RecordStyle(
+                    group='Case Normalizer', name='Case Normalizer'),
+                RecordStyle(
+                    group='Stop Words', name=" Don't remove stop words"),
+                RecordStyle(
+                    group='Word Splitter', name="Unicode Whitespace splitter"),
                 ]
             )
 
     existing_columns = catalog.schema()
-    columns = [
-        'id',
-        'meta_type',
-        'silva_object_url',
-        ]
+    columns = ['id',
+               'meta_type',]
 
     for column_name in columns:
         if column_name in existing_columns:
@@ -87,8 +83,7 @@ def configureCatalogService(catalog, event):
         ('path', 'PathIndex'),
         ('fulltext', 'ZCTextIndex'),
         ('version_status', 'FieldIndex'),
-        ('haunted_path', 'FieldIndex'),
-        ]
+        ('haunted_path', 'FieldIndex'),]
 
     for field_name, field_type in indexes:
         if field_name in existing_indexes:
