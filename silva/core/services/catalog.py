@@ -2,8 +2,10 @@
 # See also LICENSE.txt
 # $Id$
 
-from zope.app.container.interfaces import IObjectAddedEvent
 from five import grok
+from zope.app.container.interfaces import IObjectAddedEvent
+from zope.interface import Interface
+from zope import component
 
 from OFS.interfaces import IObjectWillBeRemovedEvent
 from Products.ZCatalog.ZCatalog import ZCatalog
@@ -13,16 +15,51 @@ from Products.Silva.helpers import add_and_edit, \
 from silva.core.services.base import SilvaService
 from silva.core import conf as silvaconf
 from silva.core.services.interfaces import ICatalogService
+from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
+
+
+class Cataloging(grok.Adapter):
+    """Cataloging support for objects.
+    """
+    grok.context(Interface)
+    grok.provides(ICataloging)
+    grok.implements(ICataloging)
+
+    def __init__(self, context):
+        super(Cataloging, self).__init__(context)
+        self._path = '/'.join(self.context.getPhysicalPath())
+        self._catalog = component.queryUtility(ICatalogService)
+
+    def index(self, indexes=None):
+        # We might not have any catalog to work with
+        if self._catalog is None:
+            return
+        # Get attributes to index
+        attributes = component.queryAdapter(self.context, ICatalogingAttributes)
+        if attributes is not None:
+            self._catalog.catalog_object(
+                attributes, uid=self._path, idxs=indexes)
+
+    def reindex(self, indexes=None):
+        # We just need to index again to re-index.
+        self.index(indexes=indexes)
+
+    def unindex(self):
+        # We might not have any catalog to work with
+        if self._catalog is None:
+            return
+        self._catalog.uncatalog_object(self._path)
 
 
 class CatalogService(ZCatalog, SilvaService):
     """The Service catalog.
     """
-
     meta_type = "Silva Service Catalog"
 
     grok.implements(ICatalogService)
     silvaconf.factory('manage_addCatalogService')
+
+    # XXX Fix reindex
 
 
 def manage_addCatalogService(self, id, title=None, REQUEST=None):
