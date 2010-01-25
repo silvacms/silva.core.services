@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.2dev'
+version = '2.2b1dev'
 
 setup(name='silva.core.services',
       version=version,
@@ -9,6 +9,8 @@ setup(name='silva.core.services',
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
+        "Framework :: Zope2",
+        "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
@@ -25,6 +27,9 @@ setup(name='silva.core.services',
           'setuptools',
           'five.grok',
           'five.intid',
+          'silva.core.conf',
           'silva.core.interfaces',
+          'zope.component',
+          'zope.interface',
           ],
       )
