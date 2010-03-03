@@ -3,17 +3,13 @@
 # $Id$
 
 from five import grok
-from zope.app.container.interfaces import IObjectAddedEvent
+from zope.lifecycleevent.interfaces import IObjectCreatedEvent
 from zope.interface import Interface
 from zope import component
 
-from OFS.interfaces import IObjectWillBeRemovedEvent
 from Products.ZCatalog.ZCatalog import ZCatalog
-from Products.Silva.helpers import add_and_edit, \
-    register_service, unregister_service
 
 from silva.core.services.base import SilvaService
-from silva.core import conf as silvaconf
 from silva.core.services.interfaces import ICatalogService
 from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
 
@@ -55,26 +51,9 @@ class CatalogService(ZCatalog, SilvaService):
     """The Service catalog.
     """
     meta_type = "Silva Service Catalog"
-
     grok.implements(ICatalogService)
-    silvaconf.factory('manage_addCatalogService')
 
     # XXX Fix reindex
-
-
-def manage_addCatalogService(self, id, title=None, REQUEST=None):
-    """Add a catalog service.
-    """
-
-    service = CatalogService(id, title)
-    register_service(self, id, service, ICatalogService)
-    add_and_edit(self, id, REQUEST)
-    return ''
-
-
-@grok.subscribe(ICatalogService, IObjectWillBeRemovedEvent)
-def unregisterCatalogTool(service, event):
-    unregister_service(service, ICatalogService)
 
 
 class RecordStyle(object):
@@ -84,7 +63,7 @@ class RecordStyle(object):
         self.__dict__.update(kw)
 
 
-@grok.subscribe(ICatalogService, IObjectAddedEvent)
+@grok.subscribe(ICatalogService, IObjectCreatedEvent)
 def configureCatalogService(catalog, event):
 
     lexicon_id = 'silva_lexicon'
@@ -101,8 +80,7 @@ def configureCatalogService(catalog, event):
                     group='Stop Words', name=" Don't remove stop words"),
                 RecordStyle(
                     group='Word Splitter', name="Unicode Whitespace splitter"),
-                ]
-            )
+                ])
 
     existing_columns = catalog.schema()
     columns = ['id',
