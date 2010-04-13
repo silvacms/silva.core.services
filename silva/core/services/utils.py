@@ -10,5 +10,5 @@ def walk_silva_tree(content):
         yield content
     if interfaces.IContainer.providedBy(content):
         for child in content.objectValues():
-            for content in walk_tree(child):
+            for content in walk_silva_tree(child):
                 yield content
