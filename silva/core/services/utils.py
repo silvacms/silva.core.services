@@ -1,7 +1,7 @@
 from silva.core import interfaces
 
 
-def walk_silva_tree(self, content):
+def walk_silva_tree(content):
     """A generator to lazily get all the objects that need to be
     indexed.
         """
