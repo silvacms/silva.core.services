@@ -54,6 +54,9 @@ class CatalogService(ZCatalog, SilvaService):
     grok.implements(ICatalogService)
 
     # XXX Fix reindex
+    def __init__(self, id, *args, **kw):
+        # compatibility with SilvaService factory
+        super(CatalogService, self).__init__(id)
 
 
 class RecordStyle(object):
