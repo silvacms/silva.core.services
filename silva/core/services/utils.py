@@ -22,3 +22,4 @@ def walk_silva_tree(content):
                 if count > THRESHOLD:
                     # Review ZODB cache
                     content._p_jar.cacheGC()
+                    count = 0
