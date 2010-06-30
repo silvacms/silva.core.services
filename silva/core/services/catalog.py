@@ -100,8 +100,7 @@ def configureCatalogService(catalog, event):
         ('meta_type', 'FieldIndex'),
         ('path', 'PathIndex'),
         ('fulltext', 'ZCTextIndex'),
-        ('version_status', 'FieldIndex'),
-        ('haunted_path', 'FieldIndex'),]
+        ('version_status', 'FieldIndex')]
 
     for field_name, field_type in indexes:
         if field_name in existing_indexes:
