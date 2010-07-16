@@ -4,6 +4,13 @@ Changelog
 2.3b1 (2010/07/16)
 ------------------
 
+* Add an utility ``walk_silva_tree`` to go through all Silva content.
+
+* Simplify catalog setup code with new ``silva.core.conf`` default
+  service factory.
+
+* Remove ``haunted_path`` index which now useless.
+
 * Update code to be compliant with Zope 2.12.
 
 2.2b1 (2010-01-25)

@@ -32,5 +32,7 @@ setup(name='silva.core.services',
           'silva.core.interfaces',
           'zope.component',
           'zope.interface',
+          'zope.intid',
+          'zope.lifecycleevent'
           ],
       )

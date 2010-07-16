@@ -2,7 +2,7 @@
 silva.core.services
 ===================
 
-This package contains default Silva services.
+This package contains default Silva services definition.
 
 
 

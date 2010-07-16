@@ -3,7 +3,7 @@
 # $Id$
 
 from five import grok
-from zope.app.intid.interfaces import IIntIds
+from zope.intid.interfaces import IIntIds
 
 from silva.core.services.base import IntIdService
 
