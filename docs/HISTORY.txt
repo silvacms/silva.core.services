@@ -13,8 +13,8 @@ Changelog
 
 * Update code to be compliant with Zope 2.12.
 
-2.2b1 (2010-01-25)
+2.2b1 (2010/01/25)
 ------------------
 
-* Initial release
+* Initial release.
 
