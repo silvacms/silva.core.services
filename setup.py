@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.2dev'
+version = '2.3b1'
 
 setup(name='silva.core.services',
       version=version,
@@ -19,7 +19,8 @@ setup(name='silva.core.services',
       author_email='info@infrae.com',
       url='https://infrae.com/products/silva',
       license='BSD',
-      packages=find_packages(exclude=['ez_setup']),
+      package_dir={'': 'src'},
+      packages=find_packages('src', exclude=['ez_setup']),
       namespace_packages=['silva', 'silva.core'],
       include_package_data=True,
       zip_safe=False,
