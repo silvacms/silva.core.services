@@ -70,10 +70,6 @@ class IMemberService(ISilvaService):
         """Returns the url of the authentication_requests form
         """
 
-    def get_extra_names():
-        """Return list of names of extra information.
-        """
-
     def logout(came_from=None, REQUEST=None):
         """Logout the current user.
         """
