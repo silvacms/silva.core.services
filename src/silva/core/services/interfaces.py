@@ -36,3 +36,44 @@ class ICataloging(Interface):
 class ICatalogService(ISilvaService):
     """Catalog Service, used to catalog content.
     """
+
+
+class IMemberService(ISilvaService):
+    """Member service.
+    """
+
+    def find_members(search_string, location=None):
+        """Return all users with a full name containing search string
+        at the given position.
+        """
+
+    def is_user(userid, location=None):
+        """Return true if userid is indeed a known user.
+        """
+
+    def get_member(userid, location=None):
+        """Get member object for userid, or None if no such member
+        object.
+        """
+
+    def get_cached_member(userid, location=None):
+        """Get memberobject which can be cached, or None if no such
+        memberobject.
+        """
+
+    def allow_authentication_requests():
+        """Return true if authentication requests are allowed, false
+        if not.
+        """
+
+    def get_authentication_requests_url():
+        """Returns the url of the authentication_requests form
+        """
+
+    def get_extra_names():
+        """Return list of names of extra information.
+        """
+
+    def logout(came_from=None, REQUEST=None):
+        """Logout the current user.
+        """
