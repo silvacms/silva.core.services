@@ -3,7 +3,7 @@
 # $Id$
 
 from zope.interface import Interface
-from silva.core.interfaces import ISilvaService
+from silva.core.interfaces import ISilvaService, IInvisibleService
 
 
 class ICatalogingAttributes(Interface):
@@ -72,4 +72,28 @@ class IMemberService(ISilvaService):
 
     def logout(came_from=None, REQUEST=None):
         """Logout the current user.
+        """
+
+
+class IContainerPolicyService(ISilvaService, IInvisibleService):
+
+    def get_policy(name):
+        """Return the named policy.
+        """
+
+    def list_policies():
+        """List all available policies.
+        """
+
+    def list_addable_policies(container):
+        """List all available policies that can be used on the given
+        container.
+        """
+
+    def register(name, policy, priority=0.0):
+        """Register a new policy. Name should content meta_type.
+        """
+
+    def unregister(name):
+        """Unregister a policy.
         """
