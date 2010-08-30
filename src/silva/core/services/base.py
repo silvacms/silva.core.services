@@ -2,10 +2,11 @@
 # See also LICENSE.txt
 # $Id$
 
+from Acquisition import aq_base
 from OFS import SimpleItem
+
 from five import grok
 from five.intid.intid import OFSIntIds
-
 from silva.core import interfaces
 
 
@@ -25,7 +26,7 @@ class SilvaService(ZMIObject):
         self.title = title or self.meta_type
 
     def getId(self):
-        if hasattr(self, 'default_service_identifier'):
+        if hasattr(aq_base(self), 'default_service_identifier'):
             return self.default_service_identifier
         return self.id
 
