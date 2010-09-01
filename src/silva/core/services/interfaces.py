@@ -48,7 +48,8 @@ class IMemberService(ISilvaService):
         """
 
     def is_user(userid, location=None):
-        """Return true if userid is indeed a known user.
+        """Return true if userid is indeed a known user within the
+        site at the given position.
         """
 
     def get_member(userid, location=None):
@@ -57,21 +58,31 @@ class IMemberService(ISilvaService):
         """
 
     def get_cached_member(userid, location=None):
-        """Get memberobject which can be cached, or None if no such
-        memberobject.
-        """
-
-    def allow_authentication_requests():
-        """Return true if authentication requests are allowed, false
-        if not.
-        """
-
-    def get_authentication_requests_url():
-        """Returns the url of the authentication_requests form
+        """Get member which can be cached, or None if no such.
         """
 
     def logout(came_from=None, REQUEST=None):
         """Logout the current user.
+        """
+
+
+class IGroupService(ISilvaService):
+
+    def find_groups(search_string, location=None):
+        """Return all users with a full name containing search string
+        at the given position.
+        """
+
+    def is_group(groupid, location=None):
+        """Return true if userid is indeed a known user.
+        """
+
+    def get_group(self, groupid, location=None):
+        """Return the given group.
+        """
+
+    def use_groups(location=None):
+        """Return true if groups are in used in this site.
         """
 
 
