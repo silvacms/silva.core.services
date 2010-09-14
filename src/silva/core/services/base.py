@@ -21,8 +21,8 @@ class SilvaService(ZMIObject):
     grok.baseclass()
     grok.implements(interfaces.ISilvaService)
 
-    def __init__(self, id, title=None):
-        self.id = id
+    def __init__(self, id=None, title=None):
+        self.id = id or self.default_service_identifier
         self.title = title or self.meta_type
 
     def getId(self):
@@ -32,6 +32,5 @@ class SilvaService(ZMIObject):
 
 
 class IntIdService(OFSIntIds, SilvaService):
-
     grok.baseclass()
     grok.implements(interfaces.IInvisibleService)

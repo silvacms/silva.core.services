@@ -108,3 +108,14 @@ class IContainerPolicyService(ISilvaService, IInvisibleService):
     def unregister(name):
         """Unregister a policy.
         """
+
+
+class ISecretService(ISilvaService):
+
+    def generate_new_key():
+        """ generate new internal key
+        """
+
+    def digest(*args):
+        """use args to generate a hmac.
+        """
