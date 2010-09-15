@@ -39,7 +39,7 @@ class SecretService(SilvaService):
         assert len(args) > 1, u'Too few arguments'
         challenge = hmac.new(self.__key, str(args[0]), hashlib.sha1)
         for arg in args[1:]:
-            challenge.update(str(args))
+            challenge.update(str(arg))
         return challenge.hexdigest()
 
 InitializeClass(SecretService)
