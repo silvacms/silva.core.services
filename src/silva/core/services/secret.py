@@ -36,8 +36,9 @@ class SecretService(SilvaService):
     security.declareProtected(
         'Access contents information', 'digest')
     def digest(self, *args):
-        challenge = hmac.new(self.__key, hashlib.sha1)
-        for arg in args:
+        assert len(args) > 1, u'Too few arguments'
+        challenge = hmac.new(self.__key, str(args[0]), hashlib.sha1)
+        for arg in args[1:]:
             challenge.update(str(args))
         return challenge.hexdigest()
 
