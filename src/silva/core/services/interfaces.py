@@ -3,7 +3,8 @@
 # $Id$
 
 from zope.interface import Interface
-from silva.core.interfaces import ISilvaService, IInvisibleService
+from silva.core.interfaces import (
+    ISilvaService, ISilvaLocalService, IInvisibleService)
 
 
 class ICatalogingAttributes(Interface):
@@ -108,6 +109,10 @@ class IContainerPolicyService(ISilvaService, IInvisibleService):
     def unregister(name):
         """Unregister a policy.
         """
+
+
+class ISubscriptionService(ISilvaService, ISilvaLocalService):
+    pass
 
 
 class ISecretService(ISilvaService):
