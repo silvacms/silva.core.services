@@ -10,9 +10,7 @@ from five.intid.intid import OFSIntIds
 from silva.core import interfaces
 
 
-
 class ZMIObject(SimpleItem.SimpleItem):
-
     grok.baseclass()
     grok.implements(interfaces.IZMIObject)
 
