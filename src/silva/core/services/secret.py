@@ -53,8 +53,7 @@ class SecretServiceView(silvaforms.ZMIForm):
 
     label = u"Generate new key"
     description = u"Generate a new key. Carreful!! secret key is used " \
-                  u"in session and authentication and this may logout "\
-                  u"all currently logged in users."
+                  u"in session and authentication management."
     ignoreContent = False
     ignoreRequest = True
 
