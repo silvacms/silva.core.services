@@ -77,7 +77,7 @@ class IGroupService(ISilvaService):
         """Return true if userid is indeed a known user.
         """
 
-    def get_group(self, groupid, location=None):
+    def get_group(groupid, location=None):
         """Return the given group.
         """
 
