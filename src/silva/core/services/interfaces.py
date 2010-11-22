@@ -39,50 +39,60 @@ class ICatalogService(ISilvaService):
 
 
 class IMemberService(ISilvaService):
-    """Member service.
+    """Member service, which is able to lookup members.
     """
 
     def find_members(search_string, location=None):
-        """Return all users with a full name containing search string
-        at the given position.
+        """Return all members object corresponding to users which
+        theirs fullname contains ``search_string``. Search is done at
+        the given ``location`` if provided.
         """
 
     def is_user(userid, location=None):
-        """Return true if userid is indeed a known user within the
-        site at the given position.
+        """Return true if ``userid`` is indeed a known user within the
+        site at the given ``location`` if provided.
         """
 
     def get_member(userid, location=None):
-        """Get member object for userid, or None if no such member
-        object.
+        """Get member object for ``userid``, or None if no such member
+        object within the site at the given ``location`` if provided.
         """
 
     def get_cached_member(userid, location=None):
-        """Get member which can be cached, or None if no such.
+        """Get a member object which can be cached of ``userid``, or
+        None if no such, searched within the site at the given
+        ``location`` if provided.
         """
 
     def logout(came_from=None, REQUEST=None):
-        """Logout the current user.
+        """Logout the current user. If ``came_from`` is not None, the
+        user will be redirected to this URL. Otherwise he will be
+        redirected to the public view of the site's root.
         """
 
 
 class IGroupService(ISilvaService):
 
     def find_groups(search_string, location=None):
-        """Return all users with a full name containing search string
-        at the given position.
+        """Return all group objects with a group name containing
+        ``search_string``. Search is done from the given ``location``
+        if provided.
         """
 
     def is_group(groupid, location=None):
-        """Return true if userid is indeed a known user.
+        """Return true if ``groupid`` is indeed a known group at the
+        given ``location`` if provided.
         """
 
     def get_group(groupid, location=None):
-        """Return the given group.
+        """Return the group object corresponding to ``groupid``,
+        searched at the given ``location`` if given. Return None if no
+        group are found.
         """
 
     def use_groups(location=None):
-        """Return true if groups are in used in this site.
+        """Return true if groups are in used in this site (at the
+        given ``location`` if provided).
         """
 
 
