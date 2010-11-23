@@ -72,6 +72,8 @@ class IMemberService(ISilvaService):
 
 
 class IGroupService(ISilvaService):
+    """Group service can lookup groups.
+    """
 
     def find_groups(search_string, location=None):
         """Return all group objects with a group name containing
