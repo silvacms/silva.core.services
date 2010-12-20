@@ -1,10 +1,10 @@
 Changelog
 =========
 
-2.3.1 (unreleased)
+2.3.1 (2010/12/20)
 ------------------
 
-* ...
+* Update interface documentation.
 
 2.3 (2010/10/18)
 ----------------
