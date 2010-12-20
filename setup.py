@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.3.1'
+version = '2.3.2dev'
 
 setup(name='silva.core.services',
       version=version,
