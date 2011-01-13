@@ -6,17 +6,17 @@
   <subscriber
      handler="five.intid.unreferenceable.addIntIdSubscriber"
      for="Products.FileSystemSite.interfaces.IDirectoryView
-          zope.app.container.interfaces.IObjectAddedEvent"
+          zope.lifecycleevent.interfaces.IObjectAddedEvent"
      />
   <subscriber
      handler="five.intid.unreferenceable.removeIntIdSubscriber"
      for="Products.FileSystemSite.interfaces.IDirectoryView
-          zope.app.container.interfaces.IObjectRemovedEvent"
+          zope.lifecycleevent.interfaces.IObjectRemovedEvent"
      />
   <subscriber
      handler="five.intid.unreferenceable.moveIntIdSubscriber"
      for="Products.FileSystemSite.interfaces.IDirectoryView
-          zope.app.container.interfaces.IObjectMovedEvent"
+          zope.lifecycleevent.interfaces.IObjectMovedEvent"
      />
   <adapter
      factory="five.intid.unreferenceable.KeyReferenceNever"
@@ -28,17 +28,17 @@
   <subscriber
      handler="five.intid.unreferenceable.addIntIdSubscriber"
      for="Products.FileSystemSite.FSObject.FSObject
-          zope.app.container.interfaces.IObjectAddedEvent"
+          zope.lifecycleevent.interfaces.IObjectAddedEvent"
      />
   <subscriber
      handler="five.intid.unreferenceable.removeIntIdSubscriber"
      for="Products.FileSystemSite.FSObject.FSObject
-           zope.app.container.interfaces.IObjectRemovedEvent"
+           zope.lifecycleevent.interfaces.IObjectRemovedEvent"
      />
   <subscriber
      handler="five.intid.unreferenceable.moveIntIdSubscriber"
      for="Products.FileSystemSite.FSObject.FSObject
-          zope.app.container.interfaces.IObjectMovedEvent"
+          zope.lifecycleevent.interfaces.IObjectMovedEvent"
      />
   <adapter
      factory="five.intid.unreferenceable.KeyReferenceNever"
