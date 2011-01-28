@@ -38,6 +38,13 @@ class ICatalogService(ISilvaService):
     """
 
 
+class MemberLookupError(Exception):
+    """Exception raised then a user or group search failed. A
+    comprehensive message, possiblity translated would be the first
+    argument.
+    """
+
+
 class IMemberService(ISilvaService):
     """Member service, which is able to lookup members.
     """
@@ -46,22 +53,34 @@ class IMemberService(ISilvaService):
         """Return all members object corresponding to users which
         theirs fullname contains ``search_string``. Search is done at
         the given ``location`` if provided.
+
+        :raises: :py:exc:`~silva.core.services.interfaces.MemberLookupError`
+        :return: a list of :py:class:`~silva.core.interfaces.auth.IMember`
+                 objects.
         """
 
     def is_user(userid, location=None):
         """Return true if ``userid`` is indeed a known user within the
         site at the given ``location`` if provided.
+
+        :return: a boolean.
         """
 
     def get_member(userid, location=None):
         """Get member object for ``userid``, or None if no such member
         object within the site at the given ``location`` if provided.
+
+        :return: an :py:class:`~silva.core.interfaces.auth.IMember`
+                 object or None.
         """
 
     def get_cached_member(userid, location=None):
         """Get a member object which can be cached of ``userid``, or
         None if no such, searched within the site at the given
         ``location`` if provided.
+
+        :return: an :py:class:`~silva.core.interfaces.auth.IMember`
+                 object or None.
         """
 
     def logout(came_from=None, REQUEST=None):
@@ -79,22 +98,32 @@ class IGroupService(ISilvaService):
         """Return all group objects with a group name containing
         ``search_string``. Search is done from the given ``location``
         if provided.
+
+        :raises: :py:exc:`~silva.core.services.interfaces.MemberLookupError`
+        :returns: :py:class: a list of :py:class:`~silva.core.interfaces.auth.IGroup`.
         """
 
     def is_group(groupid, location=None):
         """Return true if ``groupid`` is indeed a known group at the
         given ``location`` if provided.
+
+        :returns: a boolean.
         """
 
     def get_group(groupid, location=None):
         """Return the group object corresponding to ``groupid``,
         searched at the given ``location`` if given. Return None if no
         group are found.
+
+        :returns: a :py:class:`~silva.core.interfaces.auth.IGroup`
+                  object or None.
         """
 
     def use_groups(location=None):
         """Return true if groups are in used in this site (at the
         given ``location`` if provided).
+
+        :returns: a boolean.
         """
 
 
