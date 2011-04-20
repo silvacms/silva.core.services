@@ -2,8 +2,10 @@
 # See also LICENSE.txt
 # $Id$
 
+from zope import schema
 from zope.interface import Interface
 from silva.core.interfaces import ISilvaService, IInvisibleService
+from silva.core.interfaces import ISilvaLocalService
 
 
 class ICatalogingAttributes(Interface):
@@ -124,6 +126,26 @@ class IGroupService(ISilvaService):
         given ``location`` if provided).
 
         :returns: a boolean.
+        """
+
+
+
+class IFilesService(ISilvaLocalService):
+    """Configure File storage.
+    """
+
+    storage = schema.Choice(title=u"File Storage",
+                            description=u"Method used to store files",
+                            required=True,
+                            vocabulary="File Storage Type")
+
+    def new_file(id):
+        """Allocate a new file with the given ID.
+        """
+
+    def is_file_using_correct_storage(content):
+        """Return true if the given content is a file and using the
+        correct selected storage in the service.
         """
 
 
