@@ -129,6 +129,23 @@ class IGroupService(ISilvaService):
         """
 
 
+class IExtensionService(ISilvaService):
+    """Manage Silva extensions.
+    """
+
+    def install(name):
+        """Install extension called ``name``.
+        """
+
+    def uninstall(name):
+        """Install extension called ``name``.
+        """
+
+    def is_installed(name):
+        """Return a boolean indicating if the extension ``name`` is
+        currently installed.
+        """
+
 
 class IFilesService(ISilvaLocalService):
     """Configure File storage.
