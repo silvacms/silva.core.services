@@ -87,6 +87,7 @@ def configureCatalogService(catalog, event):
 
     existing_columns = catalog.schema()
     columns = ['id',
+               'publication_status',
                'meta_type',]
 
     for column_name in columns:
@@ -100,7 +101,7 @@ def configureCatalogService(catalog, event):
         ('meta_type', 'FieldIndex'),
         ('path', 'PathIndex'),
         ('fulltext', 'ZCTextIndex'),
-        ('version_status', 'FieldIndex')]
+        ('publication_status', 'FieldIndex')]
 
     for field_name, field_type in indexes:
         if field_name in existing_indexes:
