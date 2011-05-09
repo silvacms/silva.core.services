@@ -14,9 +14,10 @@ from zeam.form import silva as silvaforms
 
 class SecretService(SilvaService):
     grok.implements(ISecretService)
+    grok.name('service_secret')
 
     meta_type = 'Silva AIVD Secret Service'
-    default_service_identifier = 'service_secret'
+    silvaconf.default_service()
     silvaconf.icon('secret.png')
 
     security = ClassSecurityInfo()

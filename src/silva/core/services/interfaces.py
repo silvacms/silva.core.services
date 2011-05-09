@@ -166,6 +166,16 @@ class IFilesService(ISilvaLocalService):
         """
 
 
+class IContentFilteringService(ISilvaService, IInvisibleService):
+    """Filter content that should not be shawn to the public.
+    """
+
+    def filter(content):
+        """Return false if ``content`` **should not be** displayed to
+        the public.
+        """
+
+
 class IContainerPolicyService(ISilvaService, IInvisibleService):
 
     def get_policy(name):

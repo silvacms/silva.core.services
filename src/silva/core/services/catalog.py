@@ -3,13 +3,13 @@
 # $Id$
 
 from five import grok
-from zope.lifecycleevent.interfaces import IObjectCreatedEvent
 from zope.interface import Interface
 from zope import component
 
 from Products.ZCatalog.ZCatalog import ZCatalog
 
-from silva.core.services.base import SilvaService
+from silva.core import conf as silvaconf
+from silva.core.services.base import SilvaService, get_service_id
 from silva.core.services.interfaces import ICatalogService
 from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
 
@@ -47,18 +47,6 @@ class Cataloging(grok.Adapter):
         self._catalog.uncatalog_object(self._path)
 
 
-class CatalogService(ZCatalog, SilvaService):
-    """The Service catalog.
-    """
-    meta_type = "Silva Service Catalog"
-    grok.implements(ICatalogService)
-
-    # XXX Fix reindex
-    def __init__(self, id, *args, **kw):
-        # compatibility with SilvaService factory
-        super(CatalogService, self).__init__(id)
-
-
 class RecordStyle(object):
     """Helper class to initialize the catalog lexicon
     """
@@ -66,9 +54,7 @@ class RecordStyle(object):
         self.__dict__.update(kw)
 
 
-@grok.subscribe(ICatalogService, IObjectCreatedEvent)
-def configureCatalogService(catalog, event):
-
+def configure_catalog_service(catalog):
     lexicon_id = 'silva_lexicon'
     # Add lexicon with right splitter (Silva.UnicodeSplitter.Splitter
     # registers under "Unicode Whitespace splitter")
@@ -119,3 +105,21 @@ def configureCatalogService(catalog, event):
             continue
 
         catalog.addIndex(field_name, field_type)
+
+
+class CatalogService(ZCatalog, SilvaService):
+    """The Service catalog.
+    """
+    meta_type = "Silva Service Catalog"
+    grok.implements(ICatalogService)
+    grok.name('service_catalog')
+    silvaconf.default_service(setup=configure_catalog_service)
+
+    # XXX Fix reindex
+    def __init__(self, id=None, title=None, *args, **kw):
+        # Compatibility with SilvaService factory
+        super(CatalogService, self).__init__(
+            get_service_id(self, id), title or self.meta_type, *args, **kw)
+
+
+
