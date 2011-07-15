@@ -6,12 +6,12 @@ from silva.core.interfaces import ISilvaObject, IContainer, IVersionedContent
 
 THRESHOLD = 1000
 
-def walk_silva_tree(content, version=False):
+def walk_silva_tree(content, requires=ISilvaObject, version=False):
     """A generator to lazily get all the Silva object from a content /
     container.
     """
     count = 0
-    if ISilvaObject.providedBy(content):
+    if requires.providedBy(content):
         # Version are indexed by the versioned content itself
         yield content
     if IContainer.providedBy(content):
@@ -28,7 +28,7 @@ def walk_silva_tree(content, version=False):
 
 
 # XXX need testing.
-def advanced_walk_silva_tree(content, requires=ISilvaObject, version=False):
+def walk_silva_tree_ex(content, requires=ISilvaObject, version=False):
     """A controllable generator to lazily get all the Silva object
     from a content / container. Send it True to recursively go down,
     or False to skip the recursion.
@@ -40,7 +40,7 @@ def advanced_walk_silva_tree(content, requires=ISilvaObject, version=False):
     if IContainer.providedBy(content) and want_next:
         for child in content.objectValues():
             walker_next = None
-            walker = advanced_walk_silva_tree(child, requires, version)
+            walker = walk_silva_tree_ex(child, requires, version)
             while True:
                 count += 1
                 try:
@@ -53,3 +53,6 @@ def advanced_walk_silva_tree(content, requires=ISilvaObject, version=False):
                     count = 0
     if version and IVersionedContent.providedBy(content):
         want_next = yield content.get_previewable()
+
+# BBB
+advanced_walk_silva_tree = walk_silva_tree_ex
