@@ -73,6 +73,7 @@ def configure_catalog_service(catalog):
 
     existing_columns = catalog.schema()
     columns = ['id',
+               'content_intid',
                'publication_status',
                'meta_type',]
 
