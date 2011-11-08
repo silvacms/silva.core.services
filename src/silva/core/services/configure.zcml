@@ -7,9 +7,6 @@
   <include package="silva.core.conf" />
   <include package="five.intid" />
 
-  <include file="filesystemsite.zcml"
-           zcml:condition="installed Products.FileSystemSite" />
-
   <five:registerPackage package="." />
 
   <!-- Grok this package -->

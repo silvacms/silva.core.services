@@ -1,10 +1,16 @@
 Changelog
 =========
 
-2.3.2 (unreleased)
+3.0b1 (2011/11/08)
 ------------------
 
-* ...
+* Update catalog, version_status is renamed to publication_status.
+
+* Support for automatic service installation when the root is added.
+
+* Define more services API (Files ...).
+
+* Remove hacks for FilesystemSite.
 
 2.3.1 (2010/12/20)
 ------------------

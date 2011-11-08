@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '2.3.2dev'
+version = '3.0b1'
 
 setup(name='silva.core.services',
       version=version,
@@ -25,14 +25,15 @@ setup(name='silva.core.services',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'setuptools',
-          'five.grok',
-          'five.intid',
-          'silva.core.conf',
-          'silva.core.interfaces',
-          'zope.component',
-          'zope.interface',
-          'zope.intid',
-          'zope.lifecycleevent'
-          ],
+        'Products.ZCatalog',
+        'five.grok',
+        'five.intid',
+        'setuptools',
+        'silva.core.conf',
+        'silva.core.interfaces',
+        'zope.component',
+        'zope.interface',
+        'zope.intid',
+        'zope.schema',
+        ],
       )
