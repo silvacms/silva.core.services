@@ -10,21 +10,26 @@ def walk_silva_tree(content, requires=ISilvaObject, version=False):
     """A generator to lazily get all the Silva object from a content /
     container.
     """
+
+    def walker(context):
+        if requires.providedBy(context):
+            # Version are indexed by the versioned content itself
+            yield context
+        if IContainer.providedBy(context):
+            for child in context.objectValues():
+                for context in walker(child):
+                    yield context
+        elif version and IVersionedContent.providedBy(context):
+            yield context.get_previewable()
+
     count = 0
-    if requires.providedBy(content):
-        # Version are indexed by the versioned content itself
-        yield content
-    if IContainer.providedBy(content):
-        for child in content.objectValues():
-            for content in walk_silva_tree(child, version=version):
-                count += 1
-                yield content
-                if count > THRESHOLD:
-                    # Review ZODB cache
-                    content._p_jar.cacheGC()
-                    count = 0
-    if version and IVersionedContent.providedBy(content):
-        yield content.get_previewable()
+    for context in walker(content):
+        yield context
+        count += 1
+        if count > THRESHOLD:
+            # Review ZODB cache
+            content._p_jar.cacheGC()
+            count = 0
 
 
 # XXX need testing.
