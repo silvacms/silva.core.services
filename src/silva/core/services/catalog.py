@@ -51,7 +51,6 @@ class CatalogTaskQueue(threading.local):
     def index(self, content, indexes=None):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            #print 'Direct catalog', path
             catalog = self.catalog()
             if catalog is not None:
                 attributes = queryAdapter(content, ICatalogingAttributes)
@@ -61,11 +60,9 @@ class CatalogTaskQueue(threading.local):
             logger.error('Cannot index content at %s', path)
             return
         if path in self._unindex:
-            #print 'Optim index'
             del self._unindex[path]
         current = self._index.get(path)
         if current is not None:
-            #print 'Optim index', path
             if indexes is None:
                 current[0] = content
                 current[1] = None
@@ -75,7 +72,6 @@ class CatalogTaskQueue(threading.local):
     def unindex(self, content):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            #print 'Direct uncatalog', path
             catalog = self.catalog()
             if catalog is not None:
                 catalog.uncatalog_object(path)
@@ -84,13 +80,10 @@ class CatalogTaskQueue(threading.local):
             return
         if path in self._index:
             del self._index[path]
-            #print 'Optim unindex', path
         self._unindex[path] = True
 
     def beforeCommit(self):
         if self._index or self._unindex:
-            #print 'Cataloging changes, catalog:', self._index.keys()
-            #print 'Cataloging changes, uncatalog:', self._unindex.keys()
             catalog = self.catalog()
             if catalog is not None:
                 for path in self._unindex.keys():
