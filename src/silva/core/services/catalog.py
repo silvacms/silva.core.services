@@ -2,9 +2,14 @@
 # See also LICENSE.txt
 # $Id$
 
+import threading
+import logging
+
 from five import grok
 from zope.interface import Interface
-from zope import component
+from zope.component import queryAdapter, queryUtility
+from transaction.interfaces import IDataManager
+import transaction
 
 from Products.ZCatalog.ZCatalog import ZCatalog
 
@@ -14,6 +19,115 @@ from silva.core.services.interfaces import ICatalogService
 from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
 
 
+logger = logging.getLogger('silva.core.services')
+
+
+class CatalogTaskQueue(threading.local):
+    grok.implements(IDataManager)
+
+    def __init__(self, manager):
+        self.transaction_manager = manager
+        self.clear()
+
+    def clear(self):
+        self._catalog = None
+        self._index = {}
+        self._unindex = {}
+        self._deleted = {}
+        self._active = False
+
+    def catalog(self):
+        if self._catalog is None:
+            self._catalog = queryUtility(ICatalogService)
+            if self._catalog is not None:
+                self.transaction_manager.get().join(self)
+        return self._catalog
+
+    def activate(self, transaction):
+        if not self._active:
+            transaction.addBeforeCommitHook(self.beforeCommit)
+            self._active = True
+
+    def index(self, content, indexes=None):
+        path = '/'.join(content.getPhysicalPath())
+        if not self._active:
+            #print 'Direct catalog', path
+            catalog = self.catalog()
+            if catalog is not None:
+                attributes = queryAdapter(content, ICatalogingAttributes)
+                if attributes is not None:
+                    catalog.catalog_object(attributes, uid=path, idxs=indexes)
+                    return
+            logger.error('Cannot index content at %s', path)
+            return
+        if path in self._unindex:
+            #print 'Optim index'
+            del self._unindex[path]
+        current = self._index.get(path)
+        if current is not None:
+            #print 'Optim index', path
+            if indexes is None:
+                current[0] = content
+                current[1] = None
+        else:
+            self._index[path] = [content, indexes]
+
+    def unindex(self, content):
+        path = '/'.join(content.getPhysicalPath())
+        if not self._active:
+            #print 'Direct uncatalog', path
+            catalog = self.catalog()
+            if catalog is not None:
+                catalog.uncatalog_object(path)
+            else:
+                logger.error('Cannot unindex content at %s', path)
+            return
+        if path in self._index:
+            del self._index[path]
+            #print 'Optim unindex', path
+        self._unindex[path] = True
+
+    def beforeCommit(self):
+        if self._index or self._unindex:
+            #print 'Cataloging changes, catalog:', self._index.keys()
+            #print 'Cataloging changes, uncatalog:', self._unindex.keys()
+            catalog = self.catalog()
+            if catalog is not None:
+                for path in self._unindex.keys():
+                    catalog.uncatalog_object(path)
+                for path, info in self._index.iteritems():
+                    attributes = queryAdapter(info[0], ICatalogingAttributes)
+                    if attributes is not None:
+                        catalog.catalog_object(attributes, uid=path, idxs=info[1])
+
+    # We have to implement all of this in order to be able to
+    # implement abort.
+
+    def sortKey(self):
+        return 'A' * 50
+
+    def commit(self, transaction):
+        pass
+
+    def abort(self, transaction):
+        self.clear()
+
+    def tpc_begin(self, transaction):
+        pass
+
+    def tpc_vote(self, transaction):
+        pass
+
+    def tpc_finish(self, transaction):
+        self.clear()
+
+    def tpc_abort(self, transaction):
+        self.clear()
+
+
+catalog_queue = CatalogTaskQueue(transaction.manager)
+
+
 class Cataloging(grok.Adapter):
     """Cataloging support for objects.
     """
@@ -21,30 +135,14 @@ class Cataloging(grok.Adapter):
     grok.provides(ICataloging)
     grok.implements(ICataloging)
 
-    def __init__(self, context):
-        super(Cataloging, self).__init__(context)
-        self._path = '/'.join(self.context.getPhysicalPath())
-        self._catalog = component.queryUtility(ICatalogService)
-
     def index(self, indexes=None):
-        # We might not have any catalog to work with
-        if self._catalog is None:
-            return
-        # Get attributes to index
-        attributes = component.queryAdapter(self.context, ICatalogingAttributes)
-        if attributes is not None:
-            self._catalog.catalog_object(
-                attributes, uid=self._path, idxs=indexes)
+        catalog_queue.index(self.context, indexes)
 
     def reindex(self, indexes=None):
-        # We just need to index again to re-index.
-        self.index(indexes=indexes)
+        catalog_queue.index(self.context, indexes)
 
     def unindex(self):
-        # We might not have any catalog to work with
-        if self._catalog is None:
-            return
-        self._catalog.uncatalog_object(self._path)
+        catalog_queue.unindex(self.context)
 
 
 class RecordStyle(object):
