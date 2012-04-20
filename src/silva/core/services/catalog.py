@@ -92,6 +92,9 @@ class CatalogTaskQueue(threading.local):
                     attributes = queryAdapter(info[0], ICatalogingAttributes)
                     if attributes is not None:
                         catalog.catalog_object(attributes, uid=path, idxs=info[1])
+            else:
+                logger.info('Could not get catalog to catalog content')
+        self.clear()
 
     # We have to implement all of this in order to be able to
     # implement abort.
@@ -112,10 +115,10 @@ class CatalogTaskQueue(threading.local):
         pass
 
     def tpc_finish(self, transaction):
-        self.clear()
+        pass
 
     def tpc_abort(self, transaction):
-        self.clear()
+        pass
 
 
 catalog_queue = CatalogTaskQueue(transaction.manager)
