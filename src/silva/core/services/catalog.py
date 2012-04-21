@@ -35,17 +35,25 @@ class CatalogTaskQueue(threading.local):
         self._unindex = {}
         self._deleted = {}
         self._active = False
+        self._followed = False
+
+    def _follow(self):
+        if not self._followed:
+            transaction = self.transaction_manager.get()
+            transaction.join(self)
+            transaction.addBeforeCommitHook(self.beforeCommit)
+            self._followed = True
 
     def catalog(self):
         if self._catalog is None:
             self._catalog = queryUtility(ICatalogService)
             if self._catalog is not None:
-                self.transaction_manager.get().join(self)
+                self._follow()
         return self._catalog
 
     def activate(self, transaction):
         if not self._active:
-            transaction.addBeforeCommitHook(self.beforeCommit)
+            self._follow()
             self._active = True
 
     def index(self, content, indexes=None):
@@ -57,17 +65,14 @@ class CatalogTaskQueue(threading.local):
                 if attributes is not None:
                     catalog.catalog_object(attributes, uid=path, idxs=indexes)
                     return
-            logger.error('Cannot index content at %s', path)
+            logger.error(u'Cannot index content at %s.', path)
             return
         if path in self._unindex:
             del self._unindex[path]
         current = self._index.get(path)
         if current is not None:
-            if indexes is None:
-                current[0] = content
-                current[1] = None
-        else:
-            self._index[path] = [content, indexes]
+            indexes = None
+        self._index[path] = [content, indexes]
 
     def unindex(self, content):
         path = '/'.join(content.getPhysicalPath())
@@ -76,7 +81,7 @@ class CatalogTaskQueue(threading.local):
             if catalog is not None:
                 catalog.uncatalog_object(path)
             else:
-                logger.error('Cannot unindex content at %s', path)
+                logger.error(u'Cannot unindex content at %s.', path)
             return
         if path in self._index:
             del self._index[path]
@@ -91,9 +96,12 @@ class CatalogTaskQueue(threading.local):
                 for path, info in self._index.iteritems():
                     attributes = queryAdapter(info[0], ICatalogingAttributes)
                     if attributes is not None:
-                        catalog.catalog_object(attributes, uid=path, idxs=info[1])
+                        catalog.catalog_object(
+                            attributes, uid=path, idxs=info[1])
             else:
-                logger.info('Could not get catalog to catalog content')
+                logger.error(
+                    u'Could not get catalog to catalog content '
+                    u'in the transaction.')
         self.clear()
 
     # We have to implement all of this in order to be able to
