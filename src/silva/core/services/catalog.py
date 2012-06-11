@@ -8,7 +8,7 @@ import logging
 from five import grok
 from zope.interface import Interface
 from zope.component import queryAdapter, queryUtility
-from transaction.interfaces import IDataManager
+from transaction.interfaces import ISavepointDataManager, IDataManagerSavepoint
 import transaction
 
 from Products.ZCatalog.ZCatalog import ZCatalog
@@ -22,8 +22,22 @@ from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
 logger = logging.getLogger('silva.core.services')
 
 
+class CatalogTaskQueueSavepoint(object):
+    grok.implements(IDataManagerSavepoint)
+
+    def __init__(self, manager, active, index, unindex, deleted):
+        self.active = active
+        self.index = index
+        self.unindex = unindex
+        self.deleted = deleted
+        self._manager = manager
+
+    def restore(self):
+        self._manager.set_entries(self)
+
+
 class CatalogTaskQueue(threading.local):
-    grok.implements(IDataManager)
+    grok.implements(ISavepointDataManager)
 
     def __init__(self, manager):
         self.transaction_manager = manager
@@ -36,6 +50,14 @@ class CatalogTaskQueue(threading.local):
         self._deleted = {}
         self._active = False
         self._followed = False
+
+    def set_entries(self, status):
+        self._active = status.active
+        self._index = status.index.copy()
+        self._unindex = status.unindex.copy()
+        self._deleted = status.deleted.copy()
+        if self._active:
+            self._follow()
 
     def _follow(self):
         if not self._followed:
@@ -109,6 +131,14 @@ class CatalogTaskQueue(threading.local):
 
     def sortKey(self):
         return 'A' * 50
+
+    def savepoint(self):
+        return CatalogTaskQueueSavepoint(
+            self,
+            self._active,
+            self._index.copy(),
+            self._unindex.copy(),
+            self._deleted.copy())
 
     def commit(self, transaction):
         pass
