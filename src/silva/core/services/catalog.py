@@ -4,6 +4,7 @@
 
 import threading
 import logging
+import collections
 
 from five import grok
 from zope.interface import Interface
@@ -21,15 +22,17 @@ from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
 
 logger = logging.getLogger('silva.core.services')
 
+CatalogTask = collections.namedtuple(
+    'CatalogTask', ['content', 'indexes', 'initial'])
+
 
 class CatalogTaskQueueSavepoint(object):
     grok.implements(IDataManagerSavepoint)
 
-    def __init__(self, manager, active, index, unindex, deleted):
+    def __init__(self, manager, active, index, unindex):
         self.active = active
         self.index = index
         self.unindex = unindex
-        self.deleted = deleted
         self._manager = manager
 
     def restore(self):
@@ -47,7 +50,6 @@ class CatalogTaskQueue(threading.local):
         self._catalog = None
         self._index = {}
         self._unindex = {}
-        self._deleted = {}
         self._active = False
         self._followed = False
 
@@ -55,7 +57,6 @@ class CatalogTaskQueue(threading.local):
         self._active = status.active
         self._index = status.index.copy()
         self._unindex = status.unindex.copy()
-        self._deleted = status.deleted.copy()
         if self._active:
             self._follow()
 
@@ -89,12 +90,38 @@ class CatalogTaskQueue(threading.local):
                     return
             logger.error(u'Cannot index content at %s.', path)
             return
+        existing = path in self._unindex
+        if existing:
+            del self._unindex[path]
+        current = self._index.get(path)
+        if current is not None:
+            task = CatalogTask(content, None, current.initial)
+        else:
+            # If the content existed in the unindex query, when it is
+            # not initial.
+            task = CatalogTask(content, indexes, not existing)
+        self._index[path] = task
+
+    def reindex(self, content, indexes=None):
+        path = '/'.join(content.getPhysicalPath())
+        if not self._active:
+            catalog = self.catalog()
+            if catalog is not None:
+                attributes = queryAdapter(content, ICatalogingAttributes)
+                if attributes is not None:
+                    catalog.catalog_object(attributes, uid=path, idxs=indexes)
+                    return
+            logger.error(u'Cannot index content at %s.', path)
+            return
         if path in self._unindex:
             del self._unindex[path]
         current = self._index.get(path)
         if current is not None:
-            indexes = None
-        self._index[path] = [content, indexes]
+            task = CatalogTask(content, None, current.initial)
+        else:
+            # This content is not initial.
+            task = CatalogTask(content, indexes, False)
+        self._index[path] = task
 
     def unindex(self, content):
         path = '/'.join(content.getPhysicalPath())
@@ -105,8 +132,13 @@ class CatalogTaskQueue(threading.local):
             else:
                 logger.error(u'Cannot unindex content at %s.', path)
             return
-        if path in self._index:
+        current = self._index.get(path)
+        if current is not None:
             del self._index[path]
+            if current.initial:
+                # The content was scheduled to be catalog initialy,
+                # but have been removed since.
+                return
         self._unindex[path] = True
 
     def beforeCommit(self):
@@ -116,10 +148,11 @@ class CatalogTaskQueue(threading.local):
                 for path in self._unindex.keys():
                     catalog.uncatalog_object(path)
                 for path, info in self._index.iteritems():
-                    attributes = queryAdapter(info[0], ICatalogingAttributes)
+                    attributes = queryAdapter(
+                        info.content, ICatalogingAttributes)
                     if attributes is not None:
                         catalog.catalog_object(
-                            attributes, uid=path, idxs=info[1])
+                            attributes, uid=path, idxs=info.indexes)
             else:
                 logger.error(
                     u'Could not get catalog to catalog content '
@@ -137,8 +170,7 @@ class CatalogTaskQueue(threading.local):
             self,
             self._active,
             self._index.copy(),
-            self._unindex.copy(),
-            self._deleted.copy())
+            self._unindex.copy())
 
     def commit(self, transaction):
         pass
@@ -173,7 +205,7 @@ class Cataloging(grok.Adapter):
         catalog_queue.index(self.context, indexes)
 
     def reindex(self, indexes=None):
-        catalog_queue.index(self.context, indexes)
+        catalog_queue.reindex(self.context, indexes)
 
     def unindex(self):
         catalog_queue.unindex(self.context)
