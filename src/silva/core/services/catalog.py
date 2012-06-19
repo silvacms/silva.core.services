@@ -73,7 +73,7 @@ class CatalogTaskQueue(threading.local):
                 self._follow()
         return self._catalog
 
-    def activate(self, transaction):
+    def activate(self):
         if not self._active:
             self._follow()
             self._active = True
