@@ -18,7 +18,7 @@ from silva.core import conf as silvaconf
 from silva.core.services.base import SilvaService, get_service_id
 from silva.core.services.interfaces import ICatalogService
 from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
-
+from silva.core.interfaces import IUpgradeTransaction
 
 logger = logging.getLogger('silva.core.services')
 
@@ -192,6 +192,10 @@ class CatalogTaskQueue(threading.local):
 
 
 catalog_queue = CatalogTaskQueue(transaction.manager)
+
+@grok.subscribe(IUpgradeTransaction)
+def activate_upgrade(event):
+    catalog_queue.activate()
 
 
 class Cataloging(grok.Adapter):
