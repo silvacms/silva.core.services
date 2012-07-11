@@ -3,6 +3,10 @@ import os
 
 version = '3.0dev'
 
+tests_require = [
+    'Products.Silva [test]',
+    ]
+
 setup(name='silva.core.services',
       version=version,
       description="Silva Services",
@@ -36,4 +40,6 @@ setup(name='silva.core.services',
         'zope.intid',
         'zope.schema',
         ],
+      tests_require = tests_require,
+      extras_require = {'test': tests_require},
       )
