@@ -160,6 +160,11 @@ class IFilesService(ISilvaLocalService):
         """Allocate a new file with the given ID.
         """
 
+    def convert_storage(container):
+        """Convert the file storage for files contained inside the
+        container to the correct storage, if needed.
+        """
+
     def is_file_using_correct_storage(content):
         """Return true if the given content is a file and using the
         correct selected storage in the service.
