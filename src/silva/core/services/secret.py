@@ -16,7 +16,7 @@ class SecretService(SilvaService):
     grok.implements(ISecretService)
     grok.name('service_secret')
 
-    meta_type = 'Silva AIVD Secret Service'
+    meta_type = 'Silva Secret Service'
     silvaconf.default_service()
     silvaconf.icon('secret.png')
 

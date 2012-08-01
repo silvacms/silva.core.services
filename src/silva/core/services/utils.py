@@ -42,22 +42,23 @@ def walk_silva_tree_ex(content, requires=ISilvaObject, version=False):
     want_next = True
     if requires.providedBy(content):
         want_next = yield content
-    if IContainer.providedBy(content) and want_next:
-        for child in content.objectValues():
-            walker_next = None
-            walker = walk_silva_tree_ex(child, requires, version)
-            while True:
-                count += 1
-                try:
-                    walker_next = yield walker.send(walker_next)
-                except StopIteration:
-                    break
-                if count > THRESHOLD:
-                    # Review ZODB cache
-                    content._p_jar.cacheGC()
-                    count = 0
-    if version and IVersionedContent.providedBy(content):
-        want_next = yield content.get_previewable()
+    if want_next:
+        if IContainer.providedBy(content):
+            for child in content.objectValues():
+                walker_next = None
+                walker = walk_silva_tree_ex(child, requires, version)
+                while True:
+                    count += 1
+                    try:
+                        walker_next = yield walker.send(walker_next)
+                    except StopIteration:
+                        break
+                    if count > THRESHOLD:
+                        # Review ZODB cache
+                        content._p_jar.cacheGC()
+                        count = 0
+        if version and IVersionedContent.providedBy(content):
+            yield content.get_previewable()
 
 # BBB
 advanced_walk_silva_tree = walk_silva_tree_ex
