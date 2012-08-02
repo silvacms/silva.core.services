@@ -15,16 +15,16 @@ class EmptyUtilsTestCase(unittest.TestCase):
     def test_walk_empty(self):
         """Test walk_silva_tree on an empty tree.
         """
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root)),
             [self.root])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContainer)),
             [self.root])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContent)),
             [])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContent, version=True)),
             [])
 
@@ -64,7 +64,7 @@ class UtilsTestCase(unittest.TestCase):
     def test_walk(self):
         """Test walk_silva_tree with some interfaces.
         """
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root)),
             [self.root,
              self.root.folder,
@@ -74,19 +74,19 @@ class UtilsTestCase(unittest.TestCase):
              self.root.publication.contact,
              self.root.publication.location,
              self.root.information])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContainer)),
             [self.root,
              self.root.folder,
              self.root.publication,
              self.root.publication.folder])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContent)),
             [self.root.publication.toc,
              self.root.publication.contact,
              self.root.publication.location,
              self.root.information])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IContent, version=True)),
             [self.root.publication.toc,
              self.root.publication.contact,
@@ -95,7 +95,7 @@ class UtilsTestCase(unittest.TestCase):
              self.root.publication.location.get_editable(),
              self.root.information,
              self.root.information.get_editable()])
-        self.assertItemsEqual(
+        self.assertEqual(
             list(walk_silva_tree(self.root, requires=IVersion, version=True)),
             [self.root.publication.contact.get_editable(),
              self.root.publication.location.get_editable(),
@@ -104,7 +104,7 @@ class UtilsTestCase(unittest.TestCase):
     def test_walk_advanced(self):
         """Test walk_silva_tree_ex with some interfaces and stop list.
         """
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root)),
             [self.root,
              self.root.folder,
@@ -114,26 +114,26 @@ class UtilsTestCase(unittest.TestCase):
              self.root.publication.contact,
              self.root.publication.location,
              self.root.information])
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root, IContainer)),
             [self.root,
              self.root.folder,
              self.root.publication,
              self.root.publication.folder])
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root),
                     [self.root.publication]),
             [self.root,
              self.root.folder,
              self.root.publication,
              self.root.information])
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root, IContainer),
                     [self.root.publication]),
             [self.root,
              self.root.folder,
              self.root.publication])
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root, IContent, version=True)),
             [self.root.publication.toc,
              self.root.publication.contact,
@@ -145,7 +145,7 @@ class UtilsTestCase(unittest.TestCase):
         # This case is confusing. The stop object doesn't implement
         # the given iface, so it is not yield, and don't receive any
         # order to block the recursion in the stop object.
-        self.assertItemsEqual(
+        self.assertEqual(
             consume(walk_silva_tree_ex(self.root, IContent, version=True),
                     [self.root.publication]),
             [self.root.publication.toc,
