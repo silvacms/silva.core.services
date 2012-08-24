@@ -224,7 +224,7 @@ class RecordStyle(object):
 
 def configure_catalog_service(catalog):
     lexicon_id = 'silva_lexicon'
-    # Add lexicon with right splitter (Silva.UnicodeSplitter.Splitter
+    # Add lexicon with right splitter (silva.core.service.splitter.Splitter
     # registers under "Unicode Whitespace splitter")
     if not lexicon_id in catalog.objectIds():
         # XXX ugh, hardcoded dependency on names in ZCTextIndex

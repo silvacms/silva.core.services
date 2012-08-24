@@ -4,6 +4,6 @@
 
 from silva.core import conf as silvaconf
 
-silvaconf.extensionName('silva.core.services')
-silvaconf.extensionTitle('Silva Core Services')
-silvaconf.extensionSystem()
+silvaconf.extension_name('silva.core.services')
+silvaconf.extension_title('Silva Core Services')
+silvaconf.extension_system()
