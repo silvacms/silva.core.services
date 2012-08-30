@@ -26,7 +26,7 @@ CatalogTask = collections.namedtuple(
     'CatalogTask', ['content', 'indexes', 'initial'])
 
 
-class CatalogTaskQueueSavepoint(object):
+class TaskQueueSavepoint(object):
     grok.implements(IDataManagerSavepoint)
 
     def __init__(self, manager, active, index, unindex):
@@ -39,7 +39,7 @@ class CatalogTaskQueueSavepoint(object):
         self._manager.set_entries(self)
 
 
-class CatalogTaskQueue(threading.local):
+class TaskQueue(threading.local):
     grok.implements(ISavepointDataManager)
 
     def __init__(self, manager):
@@ -67,7 +67,7 @@ class CatalogTaskQueue(threading.local):
             transaction.addBeforeCommitHook(self.beforeCommit)
             self._followed = True
 
-    def catalog(self):
+    def get_catalog(self):
         if self._catalog is None:
             self._catalog = queryUtility(ICatalogService)
             if self._catalog is not None:
@@ -82,7 +82,7 @@ class CatalogTaskQueue(threading.local):
     def index(self, content, indexes=None):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.catalog()
+            catalog = self.get_catalog()
             if catalog is not None:
                 attributes = queryAdapter(content, ICatalogingAttributes)
                 if attributes is not None:
@@ -105,7 +105,7 @@ class CatalogTaskQueue(threading.local):
     def reindex(self, content, indexes=None):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.catalog()
+            catalog = self.get_catalog()
             if catalog is not None:
                 attributes = queryAdapter(content, ICatalogingAttributes)
                 if attributes is not None:
@@ -126,12 +126,12 @@ class CatalogTaskQueue(threading.local):
     def unindex(self, content):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.catalog()
+            catalog = self.get_catalog()
             if catalog is not None:
                 catalog.uncatalog_object(path)
             else:
                 logger.error(u'Cannot unindex content at %s.', path)
-            return
+                return
         current = self._index.get(path)
         if current is not None:
             del self._index[path]
@@ -143,7 +143,7 @@ class CatalogTaskQueue(threading.local):
 
     def beforeCommit(self):
         if self._index or self._unindex:
-            catalog = self.catalog()
+            catalog = self.get_catalog()
             if catalog is not None:
                 for path in self._unindex.keys():
                     catalog.uncatalog_object(path)
@@ -166,7 +166,7 @@ class CatalogTaskQueue(threading.local):
         return 'A' * 50
 
     def savepoint(self):
-        return CatalogTaskQueueSavepoint(
+        return TaskQueueSavepoint(
             self,
             self._active,
             self._index.copy(),
@@ -191,11 +191,11 @@ class CatalogTaskQueue(threading.local):
         pass
 
 
-catalog_queue = CatalogTaskQueue(transaction.manager)
+task_queue = TaskQueue(transaction.manager)
 
 @grok.subscribe(IUpgradeTransaction)
 def activate_upgrade(event):
-    catalog_queue.activate()
+    task_queue.activate()
 
 
 class Cataloging(grok.Adapter):
@@ -206,13 +206,13 @@ class Cataloging(grok.Adapter):
     grok.implements(ICataloging)
 
     def index(self, indexes=None):
-        catalog_queue.index(self.context, indexes)
+        task_queue.index(self.context, indexes)
 
     def reindex(self, indexes=None):
-        catalog_queue.reindex(self.context, indexes)
+        task_queue.reindex(self.context, indexes)
 
     def unindex(self):
-        catalog_queue.unindex(self.context)
+        task_queue.unindex(self.context)
 
 
 class RecordStyle(object):
