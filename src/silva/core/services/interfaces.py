@@ -106,6 +106,15 @@ class IMemberService(ISilvaService):
                  object or None.
         """
 
+    def get_display_usernames():
+        """Get whether it should display usernames instead of users login
+        names.
+        """
+
+    def get_redirect_to_root():
+        """Get whether it should always redirect to root after logout.
+        """
+
     def logout(came_from=None, REQUEST=None):
         """Logout the current user. If ``came_from`` is not None, the
         user will be redirected to this URL. Otherwise he will be
