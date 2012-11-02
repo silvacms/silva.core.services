@@ -111,6 +111,10 @@ class IMemberService(ISilvaService):
         names.
         """
 
+    def get_display_emails():
+        """ Get whether it should display emails.
+        """
+
     def get_redirect_to_root():
         """Get whether it should always redirect to root after logout.
         """
