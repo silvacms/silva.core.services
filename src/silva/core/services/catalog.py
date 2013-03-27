@@ -129,9 +129,9 @@ class TaskQueue(threading.local):
             catalog = self.get_catalog()
             if catalog is not None:
                 catalog.uncatalog_object(path)
-            else:
-                logger.error(u'Cannot unindex content at %s.', path)
                 return
+            logger.error(u'Cannot unindex content at %s.', path)
+            return
         current = self._index.get(path)
         if current is not None:
             del self._index[path]
