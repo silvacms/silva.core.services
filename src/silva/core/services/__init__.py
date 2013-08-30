@@ -8,4 +8,4 @@ silvaconf.extension_name('silva.core.services')
 silvaconf.extension_title('Silva Core Services')
 silvaconf.extension_system()
 
-from .catalog import task_queue
+from .catalog import CatalogingTask

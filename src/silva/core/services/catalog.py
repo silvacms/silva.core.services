@@ -2,15 +2,12 @@
 # Copyright (c) 2002-2013 Infrae. All rights reserved.
 # See also LICENSE.txt
 
-import threading
 import logging
 import collections
 
 from five import grok
 from zope.interface import Interface
 from zope.component import queryAdapter, queryUtility
-from transaction.interfaces import ISavepointDataManager, IDataManagerSavepoint
-import transaction
 
 from Products.ZCatalog.ZCatalog import ZCatalog
 
@@ -18,75 +15,44 @@ from silva.core import conf as silvaconf
 from silva.core.services.base import SilvaService, get_service_id
 from silva.core.services.interfaces import ICatalogService
 from silva.core.services.interfaces import ICataloging, ICatalogingAttributes
+from silva.core.services.delayed import Task, lazy
 from silva.core.interfaces import IUpgradeTransaction
 
 logger = logging.getLogger('silva.core.services')
 
-CatalogTask = collections.namedtuple(
-    'CatalogTask', ['content', 'indexes', 'initial'])
+CatalogTodo = collections.namedtuple(
+    'CatalogTodo', ['content', 'indexes', 'initial'])
 
 
-class TaskQueueSavepoint(object):
-    grok.implements(IDataManagerSavepoint)
+class CatalogingTask(Task):
+    priority = 1000
 
-    def __init__(self, manager, active, index, unindex):
-        self.active = active
-        self.index = index
-        self.unindex = unindex
-        self._manager = manager
+    def __init__(self, active=False, index=None, unindex=None):
+        self._active = active
+        self._index = {} if index is None else index.copy()
+        self._unindex = {} if unindex is None else unindex.copy()
 
-    def restore(self):
-        self._manager.set_entries(self)
+    def copy(self):
+        return CatalogingTask(self._active, self._index, self._unindex)
 
-
-class TaskQueue(threading.local):
-    grok.implements(ISavepointDataManager)
-
-    def __init__(self, manager):
-        self.transaction_manager = manager
-        self.clear()
-
-    def clear(self):
-        self._catalog = None
-        self._index = {}
-        self._unindex = {}
-        self._active = False
-        self._followed = False
-
-    def set_entries(self, status):
-        self._active = status.active
-        self._index = status.index.copy()
-        self._unindex = status.unindex.copy()
-        if self._active:
-            self._follow()
-
-    def _follow(self):
-        if not self._followed:
-            transaction = self.transaction_manager.get()
-            transaction.join(self)
-            transaction.addBeforeCommitHook(self.beforeCommit)
-            self._followed = True
-
-    def get_catalog(self):
-        if self._catalog is None:
-            self._catalog = queryUtility(ICatalogService)
-            if self._catalog is not None:
-                self._follow()
-        return self._catalog
+    @lazy
+    def catalog(self):
+        return queryUtility(ICatalogService)
 
     def activate(self):
         if not self._active:
-            self._follow()
             self._active = True
 
     def index(self, content, indexes=None):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.get_catalog()
-            if catalog is not None:
+            if self.catalog is not None:
                 attributes = queryAdapter(content, ICatalogingAttributes)
                 if attributes is not None:
-                    catalog.catalog_object(attributes, uid=path, idxs=indexes)
+                    self.catalog.catalog_object(
+                        attributes,
+                        uid=path,
+                        idxs=indexes)
                     return
             logger.error(u'Cannot index content at %s.', path)
             return
@@ -95,21 +61,23 @@ class TaskQueue(threading.local):
             del self._unindex[path]
         current = self._index.get(path)
         if current is not None:
-            task = CatalogTask(content, None, current.initial)
+            task = CatalogTodo(content, None, current.initial)
         else:
             # If the content existed in the unindex query, when it is
             # not initial.
-            task = CatalogTask(content, indexes, not existing)
+            task = CatalogTodo(content, indexes, not existing)
         self._index[path] = task
 
     def reindex(self, content, indexes=None):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.get_catalog()
-            if catalog is not None:
+            if self.catalog is not None:
                 attributes = queryAdapter(content, ICatalogingAttributes)
                 if attributes is not None:
-                    catalog.catalog_object(attributes, uid=path, idxs=indexes)
+                    self.catalog.catalog_object(
+                        attributes,
+                        uid=path,
+                        idxs=indexes)
                     return
             logger.error(u'Cannot index content at %s.', path)
             return
@@ -117,18 +85,17 @@ class TaskQueue(threading.local):
             del self._unindex[path]
         current = self._index.get(path)
         if current is not None:
-            task = CatalogTask(content, None, current.initial)
+            task = CatalogTodo(content, None, current.initial)
         else:
             # This content is not initial.
-            task = CatalogTask(content, indexes, False)
+            task = CatalogTodo(content, indexes, False)
         self._index[path] = task
 
     def unindex(self, content):
         path = '/'.join(content.getPhysicalPath())
         if not self._active:
-            catalog = self.get_catalog()
-            if catalog is not None:
-                catalog.uncatalog_object(path)
+            if self.catalog is not None:
+                self.catalog.uncatalog_object(path)
                 return
             logger.error(u'Cannot unindex content at %s.', path)
             return
@@ -141,61 +108,26 @@ class TaskQueue(threading.local):
                 return
         self._unindex[path] = True
 
-    def beforeCommit(self):
+    def finish(self):
         if self._index or self._unindex:
-            catalog = self.get_catalog()
-            if catalog is not None:
+            if self.catalog is not None:
                 for path in self._unindex.keys():
-                    catalog.uncatalog_object(path)
+                    self.catalog.uncatalog_object(path)
                 for path, info in self._index.iteritems():
                     attributes = queryAdapter(
                         info.content, ICatalogingAttributes)
                     if attributes is not None:
-                        catalog.catalog_object(
+                        self.catalog.catalog_object(
                             attributes, uid=path, idxs=info.indexes)
             else:
                 logger.error(
                     u'Could not get catalog to catalog content '
                     u'in the transaction.')
-        self.clear()
 
-    # We have to implement all of this in order to be able to
-    # implement abort.
-
-    def sortKey(self):
-        return 'A' * 50
-
-    def savepoint(self):
-        return TaskQueueSavepoint(
-            self,
-            self._active,
-            self._index.copy(),
-            self._unindex.copy())
-
-    def commit(self, transaction):
-        pass
-
-    def abort(self, transaction):
-        self.clear()
-
-    def tpc_begin(self, transaction):
-        pass
-
-    def tpc_vote(self, transaction):
-        pass
-
-    def tpc_finish(self, transaction):
-        pass
-
-    def tpc_abort(self, transaction):
-        pass
-
-
-task_queue = TaskQueue(transaction.manager)
 
 @grok.subscribe(IUpgradeTransaction)
 def activate_upgrade(event):
-    task_queue.activate()
+    CatalogingTask.get().activate()
 
 
 class Cataloging(grok.Adapter):
@@ -206,13 +138,13 @@ class Cataloging(grok.Adapter):
     grok.implements(ICataloging)
 
     def index(self, indexes=None):
-        task_queue.index(self.context, indexes)
+        CatalogingTask.get().index(self.context, indexes)
 
     def reindex(self, indexes=None):
-        task_queue.reindex(self.context, indexes)
+        CatalogingTask.get().reindex(self.context, indexes)
 
     def unindex(self):
-        task_queue.unindex(self.context)
+        CatalogingTask.get().unindex(self.context)
 
 
 class RecordStyle(object):
