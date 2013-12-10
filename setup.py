@@ -13,7 +13,7 @@ tests_require = [
 
 setup(name='silva.core.services',
       version=version,
-      description="Silva Services",
+      description="Configuration services for Silva CMS",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
@@ -25,7 +25,7 @@ setup(name='silva.core.services',
       keywords='silva core services',
       author='Infrae',
       author_email='info@infrae.com',
-      url='https://infrae.com/products/silva',
+      url='https://github.com/silvacms/silva.core.services',
       license='BSD',
       package_dir={'': 'src'},
       packages=find_packages('src', exclude=['ez_setup']),

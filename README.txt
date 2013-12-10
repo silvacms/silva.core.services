@@ -11,8 +11,8 @@ developer documentation`_.
 Code repository
 ===============
 
-The code for this extension can be found in Mercurial:
-https://hg.infrae.com/silva.core.services
+The code for this extension can be found in Git:
+https://github.com/silvacms/silva.core.services
 
 .. _Silva developer documentation: http://docs.silvacms.org/latest
 
